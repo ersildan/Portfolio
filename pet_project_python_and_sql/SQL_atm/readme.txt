@@ -1,3 +1,5 @@
-Pet project Atm
+Project Atm
 
-Python + Sqlite3
+The user selects the currency to convert.
+All changes are saved in the database. 
+The SQLite3 and Python libraries are used.
