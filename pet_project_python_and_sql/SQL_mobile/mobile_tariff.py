@@ -1,4 +1,4 @@
-from UsersTariff import UsersTariff
+from users_tariff import UsersTariff
 
 
 class MobileTariff:

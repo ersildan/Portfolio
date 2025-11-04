@@ -2,20 +2,17 @@ import sqlite3
 
 """Создаем базу данных users_balance"""
 
-db = sqlite3.connect('exchanger.db') # Создаем и подключаем БД
-cur = db.cursor() # Переменная для управления БД
-print("1. Создали и подключились к базе данных exchanger.db")
+db = sqlite3.connect('exchanger.db')
+cur = db.cursor()
 
-"""Создаём таблицу users_data, если она не создана.
-Задаем названия и тип данных для колонок."""
 cur.execute("""
-    CREATE TABLE IF NOT EXISTS users_balance(
-    UserID TEXT PRIMARY KEY,
-    Balance_RUB FLOAT NOT NULL,
-    Balance_USD FLOAT NOT NULL,
-    Balance_EUR FLOAT NOT NULL
-    );""")
-print("2. Создали таблицу users_balance и задали типы данных для колонок")
+            CREATE TABLE IF NOT EXISTS users_balance(
+            UserID TEXT PRIMARY KEY,
+            Balance_RUB FLOAT NOT NULL,
+            Balance_USD FLOAT NOT NULL,
+            Balance_EUR FLOAT NOT NULL);
+            """)
+
 print("\033[32mДобро пожаловать в обменник валют\033[0m")
 
 """Вносим первого пользователя в таблицу.
@@ -24,15 +21,19 @@ print("\033[32mДобро пожаловать в обменник валют\03
 
 money_params = ('Брюс Уэйн', 1000000.0, 1000.0, 100.0)
 cur.execute("""
-    INSERT OR IGNORE INTO users_balance (UserID, Balance_RUB, Balance_USD, Balance_EUR)
-        VALUES (?, ?, ?, ?)""", money_params)
-db.commit() # Сохраняем все изменения
+            INSERT OR IGNORE INTO users_balance 
+            (UserID, Balance_RUB, Balance_USD, Balance_EUR)
+            VALUES (?, ?, ?, ?)
+            """, money_params)
+db.commit()
 
-exc_txt = """Курс валют:
-1 USD = 70 RUB
-1 EUR = 80 RUB
-1 USD = 0,87 EUR
-1 EUR = 1,15 USD"""
+exc_txt =   """
+            Курс валют:
+            1 USD = 70 RUB
+            1 EUR = 80 RUB
+            1 USD = 0,87 EUR
+            1 EUR = 1,15 USD
+            """
 
 d = {
      '1': 'RUB',
@@ -43,7 +44,7 @@ d = {
 def update_balance(amount, choice_1, choice_2, balance, name_exc):
     """Функция для обновления данных в users_balance"""
 
-    code = choice_1 + choice_2 # Кодировка для курса валют словарь dict_code
+    code = choice_1 + choice_2 # Ключ для словаря dict_code
     dict_code = {
          '12': 1/70, '13': 1/80,
          '21': 70, '23': 0.87,
@@ -57,11 +58,11 @@ def update_balance(amount, choice_1, choice_2, balance, name_exc):
     print(f'Совершен обмен валют {amount} {d[choice_1]} на {round(update_amount, 2)} {d[choice_2]}')
 
    # Обновляем users_balance новыми данными
-    cur.executescript(f"""
-        UPDATE users_balance SET {name_exc} = {new_balance};
-        UPDATE users_balance SET {name_exc_} =  {name_exc_} + {update_amount}
-    """)
-    db.commit() # Сохраняем изменения в БД
+    cur.executescript(  f"""
+                        UPDATE users_balance SET {name_exc} = {new_balance};
+                        UPDATE users_balance SET {name_exc_} =  {name_exc_} + {update_amount}
+                        """)
+    db.commit()
 
 def check_amount(amount, choice_1):
     """Проверка amount на правильность ввода и на остаток баланса"""
@@ -73,9 +74,9 @@ def check_amount(amount, choice_1):
     except:
         raise Exception ('\033[31mОшибка\033[0m: Нужно вводить только цифры больше нуля')
 
-    cur.execute("""SELECT * FROM users_balance;""") # Запрос в таблицу users_balance
+    cur.execute("""SELECT * FROM users_balance limit 1;""")
 
-    data = cur.fetchone() # Данные из первой строки в таблице users_balance
+    data = cur.fetchone() # Данные из строки в таблице users_balance
     balance = data[int(choice_1)] # Баланс выбранной валюты
     name_exc = cur.description[int(choice_1)][0] # Наименование валюты
 
@@ -90,14 +91,14 @@ def check_amount(amount, choice_1):
 
     choice_2 = input() # Выбор пользователя на что он будет менять свою валюту
 
-    if choice_2.isdigit() is not True: # Проверка на цифры
+    if choice_2.isdigit() is not True:
         raise Exception('\033[31mОшибка\033[0m: Нужно вводить только положительное число без букв')
-    if choice_1 == choice_2 or choice_2 not in ['1', '2', '3']: # Дополнительная проверка
+    if choice_1 == choice_2 or choice_2 not in ['1', '2', '3']:
         raise Exception('\033[31mОшибка\033[0m: Выбирайте, пожалуйста, из доступных вариантов')
 
-    update_balance(amount, choice_1, choice_2, balance, name_exc) # Функция по обновлению баланса валют
+    update_balance(amount, choice_1, choice_2, balance, name_exc)
 
-    cur.execute("""SELECT * FROM users_balance;""") # Читаем таблицу с новыми данными
+    cur.execute("""SELECT * FROM users_balance limit 1;""")
     new_data = cur.fetchone() # Берем первую строку из таблицы users_balance
 
     b1 = new_data[int(choice_1)] # Баланс валюты, которую отдали
@@ -141,4 +142,4 @@ def func():
             print(e)
 
 if __name__ == '__main__':
-    func() # Старт программы
+    func()
